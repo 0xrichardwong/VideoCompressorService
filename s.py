@@ -14,13 +14,13 @@ def extract_header(header):
     hash_length = 64  # Define the byte size for the hash (hexadecimal representation of SHA-256)
     data_length_size = 4  # Fixed size for data length
     json_size = 64  # Fixed size for JSON length
+    total_length = filename_length+hash_length+data_length_size+json_size
     
     filename = header[:filename_length].rstrip(b'\x00').decode()  # Remove padding and decode
     data_length = int.from_bytes(header[filename_length:filename_length + data_length_size], "big")
     hash = header[filename_length + data_length_size:filename_length + data_length_size + hash_length].decode()
     json = int.from_bytes(header[filename_length + data_length_size + hash_length:filename_length + data_length_size + hash_length + json_size], "big")
     return filename, data_length, hash, json
-
 
 def upload():
     # まず、必要なモジュールをインポートし、ソケットオブジェクトを作成して、アドレスファミリ（AF_INET）とソケットタイプ（SOCK_STREAM）を指定します。サーバのアドレスは、任意のIPアドレスからの接続を受け入れるアドレスである0.0.0.0に設定し、サーバのポートは9001に設定されています。
@@ -46,12 +46,12 @@ def upload():
         try:
             print('connection from', client_address)
             # 次に、クライアントから受信したデータのヘッダを読み取り、変数headerに格納します。ヘッダには、ファイル名の長さ、JSON データの長さ、クライアントから受信するデータの長さに関する情報が含まれています。
-            header = connection.recv(8)
-            filename, data_length, hashedFile, json = extract_header(header)
+            header = connection.recv(164)
+            filename, data_length, clientHash, json = extract_header(header)
 
             print("Extracted Filename:", filename)
             print("Extracted Data Length:", data_length)
-            print("Extracted Hash:", hash)
+            print("Extracted Hash:", clientHash)
             print("Extracted JSON:", json)
 
             # 次に、コードはクライアントから受け取ったファイル名で新しいファイルをtempフォルダに作成します。このファイルは、withステートメントを使用してバイナリモードで開かれ、write()関数を使用して、クライアントから受信したデータをファイルに書き込みます。データはrecv()関数を使用して塊単位で読み込まれ、データの塊を受信するたびにデータ長がデクリメントされます。
@@ -65,7 +65,12 @@ def upload():
                     data_length -= len(data)
                     print(data_length)
 
-            print('Finished downloading the file from client.')
+            print('Finished uploading the file from client.')
+
+            # checking the hash of the file 
+            uploadedFilePath = '/home/ubuntu/mydir/Backend2/Video/temp/cat.mp4'
+            if hashFunc(uploadedFilePath) != clientHash:
+                return print('Error: Please upload the file again.')
 
         except Exception as e:
             print('Error: ' + str(e))

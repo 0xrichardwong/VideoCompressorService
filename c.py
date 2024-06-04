@@ -37,7 +37,9 @@ def upload():
 
     try:
         # File to be uploaded must be a text file and below 2GB
-        filepath = input('Type in a file to upload: ')
+
+        filepath = '/home/ubuntu/mydir/Backend2/Video/cat.mp4'
+        # filepath = input('Type in a file to upload: ')
 
         with open(filepath, 'rb') as f:
             filename = os.path.basename(f.name)
@@ -50,10 +52,10 @@ def upload():
             if filesize > pow(2, 32):
                 raise Exception('File must be below 2GB.')
 
-            hashedFile = hashFunc(filepath)
+            clientHash = hashFunc(filepath)
 
             # Create header information using protocol_header() and send the header and filename to the server
-            header = protocol_header(filename, filesize, hashedFile, 0)
+            header = protocol_header(filename, filesize, clientHash, 0)
             print(header)
         
 
@@ -94,5 +96,8 @@ def upload():
     finally:
         print('closing socket')
         sock.close()
+
+
+# def download():
 
 upload()
