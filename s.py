@@ -2,6 +2,8 @@ import socket
 import os
 from pathlib import Path
 import hashlib
+import video_editor
+import json
 
 def hashFunc(filepath):
     # Convert filepath to bytes before hashing
@@ -13,7 +15,7 @@ def extract_header(header):
     filename_length = 32  # Define the byte size for the filename
     hash_length = 64  # Define the byte size for the hash (hexadecimal representation of SHA-256)
     data_length_size = 4  # Fixed size for data length
-    json_size = 64  # Fixed size for JSON length
+    json_size = 4  # Fixed size for JSON length
     total_length = filename_length+hash_length+data_length_size+json_size
     
     filename = header[:filename_length].rstrip(b'\x00').decode()  # Remove padding and decode
@@ -27,7 +29,7 @@ def upload():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = '0.0.0.0'
     server_port = 9001
-    stream_rate = 4096*10
+    stream_rate = 4096*100
 
     # 次に、現在の作業ディレクトリに「temp」という名前のフォルダが存在するかどうかをチェックします。存在しない場合は、os.makedirs() 関数を使用してフォルダを作成します。このフォルダは、クライアントから受信したファイルを格納するために使用されます。
     dpath = 'temp'
@@ -71,6 +73,26 @@ def upload():
             uploadedFilePath = '/Users/richardwong_/Documents/Web3/Recursionist/2.Backend2/videoCompressor/temp/cat.mp4'
             if hashFunc(uploadedFilePath) != clientHash:
                 return print('Error: Please upload the file again.')
+            
+
+            """
+            # edit the video
+
+            # convert_to_mp3('cat.mp4')
+            # compressSize('cat.mp4')
+            # changeResolution('cat.mp4', 1280, 720)
+            # changeAspectRatio('cat.mp4', '16:9')
+            # convert_to_GIF('cat.mp4', '00:00:10', '5')
+            # change_speed('cat.mp4', 2.0)
+
+            edit_method = json[method]
+            edit_params = json[params]
+
+            message = {
+                "method": method,
+                "params": params,
+            }
+            """
 
         except Exception as e:
             print('Error: ' + str(e))
