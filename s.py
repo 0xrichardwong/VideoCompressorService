@@ -68,7 +68,7 @@ def upload():
             print('Finished uploading the file from client.')
 
             # checking the hash of the file 
-            uploadedFilePath = '/home/ubuntu/mydir/Backend2/Video/temp/cat.mp4'
+            uploadedFilePath = '/Users/richardwong_/Documents/Web3/Recursionist/2.Backend2/videoCompressor/temp/cat.mp4'
             if hashFunc(uploadedFilePath) != clientHash:
                 return print('Error: Please upload the file again.')
 
