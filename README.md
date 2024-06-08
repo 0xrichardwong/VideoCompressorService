@@ -13,7 +13,7 @@ https://github.com/0xrichardwong/VideoManipulator/assets/24628052/f6953b27-73a8-
 
 <h1>Video Compressor and Editor</h1>
 
-<p>This project is a video compressor and editor, designed to handle video file reception over a socket, apply various editing functions, and send the edited file back to the client. The project is implemented in Python and supports various video editing functionalities such as compression, resolution change, aspect ratio adjustment, and format conversion.</p>
+<p>This project is a video editor, designed to handle video file reception over a socket, apply various editing functions, and send the edited file back to the client. The project is implemented in Python and supports various video editing functionalities such as compression, resolution change, aspect ratio adjustment, and format conversion.</p>
 
 <h2 id="features">Features</h2>
 <ul>
