@@ -14,13 +14,17 @@ def extract_header(header):
     filename_length = 32
     hash_length = 64
     data_length_size = 4
-    json_size = 4
-    
+    json_length_size = 64
+    # Extract and decode the filename, stripping any padding null bytes
     filename = header[:filename_length].rstrip(b'\x00').decode()
+    # Extract and convert the data length from bytes to an integer
     data_length = int.from_bytes(header[filename_length:filename_length + data_length_size], "big")
-    file_hash = header[filename_length + data_length_size:filename_length + data_length_size + hash_length].decode()
-    json_data = header[filename_length + data_length_size + hash_length:filename_length + data_length_size + hash_length + json_size].decode()
-    return filename, data_length, file_hash, json_data
+    # Extract and decode the file hash, stripping any padding null bytes
+    file_hash = header[filename_length + data_length_size:filename_length + data_length_size + hash_length].rstrip(b'\x00').decode()
+    # Extract and convert the JSON length from bytes to an integer
+    json_length = header[filename_length + data_length_size + hash_length:filename_length + data_length_size + hash_length + json_length_size].rstrip(b'\x00').decode()
+    
+    return filename, data_length, file_hash, json_length
 
 def upload():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -41,12 +45,12 @@ def upload():
         try:
             print('connection from', client_address)
             header = connection.recv(164)
-            filename, data_length, clientHash, json_data = extract_header(header)
+            filename, data_length, clientHash, json = extract_header(header)
 
             print("Extracted Filename:", filename)
             print("Extracted Data Length:", data_length)
             print("Extracted Hash:", clientHash)
-            print("Extracted JSON:", json_data)
+            print("Extracted JSON:", json)
 
             filepath = os.path.join(dpath, filename)
             with open(filepath, 'wb+') as f:
@@ -58,21 +62,25 @@ def upload():
 
             print('Finished uploading the file from client.')
 
-            if hashFunc(filepath) != clientHash:
+            if hashFunc(filepath) == clientHash:
+                print('Received file hash matches with client hash')
+            else:
                 print('Error: Please upload the file again.')
                 continue
 
+            """
             # Receive the JSON message after file data\
-            json_message = json_data.decode()
+            json_data = connection.recv(json_length)
+            json_message = json_data.decode('utf-8')
             message = json.loads(json_message)
             return print("Extracted JSON Message:", message)
-
 
             edit_method = message['method']
             edit_method = globals()[edit_method]
             edit_params = message['params']
 
             edit_method(*edit_params)
+            """
 
         except Exception as e:
             print('Error: ' + str(e))

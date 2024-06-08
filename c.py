@@ -9,10 +9,20 @@ def protocol_header(filename, data_length, file_hash, json_data):
     filename_length = 32  # Define the byte size for the filename
     hash_length = 64  # Define the byte size for the hash (hexadecimal representation of SHA-256)
     data_length_size = 4  # Fixed size for data length
-    json_size = 4  # Fixed size for JSON length to store the length of the JSON message
+    json_length_size = 64  # Fixed size for JSON length to store the length of the JSON message
 
+    # Encode filename and hash, padded with null bytes if necessary
     filename_bytes = filename.encode().ljust(filename_length, b'\x00')
-    return filename_bytes + data_length.to_bytes(data_length_size, "big") + file_hash.encode().ljust(hash_length, b'\x00') + json_data.encode().ljust(json_size, b'\x00')
+    file_hash_bytes = file_hash.encode().ljust(hash_length, b'\x00')
+
+    # Convert data length to bytes
+    data_length_bytes = data_length.to_bytes(data_length_size, "big")
+
+    # Encode the JSON data
+    # json_bytes = json_data.encode('utf-8')
+    json_bytes = json_data.encode().ljust(json_length_size, b'\x00')
+    
+    return filename_bytes + data_length_bytes + file_hash_bytes + json_bytes
 
 def hashFunc(filepath):
     with open(filepath, 'rb') as f:
@@ -56,20 +66,24 @@ def upload():
 
         # 3. client hash
         clientHash = hashFunc(filepath)
+        print('Client Hash:',clientHash)
 
         # 4. JSON
+        """
         edit_method = input('Type in an edit method: ')
         edit_params = input('Type in parameter(s): ').split(',')
+        """
 
         message = {
-            "method": edit_method,
-            "params": edit_params
+            # "method": edit_method,
+            # "params": edit_params
+            "method": "convert_to_mp3",
+            "params": "cat.mp4"
         }
         json_message = json.dumps(message)
-        bytes_message = json_message.encode('utf-8')
 
         # Create header information using protocol_header() and send the header and filename to the server
-        header = protocol_header(filename, filesize, clientHash, bytes_message)
+        header = protocol_header(filename, filesize, clientHash, json_message)
         sock.send(header)
         print(header)
 
@@ -80,9 +94,6 @@ def upload():
                 print("Sending...")
                 sock.send(data)
                 data = f.read(stream_rate)
-        
-        # Send the JSON message at the end
-        sock.send(bytes_message)
 
     finally:
         print('closing socket')
