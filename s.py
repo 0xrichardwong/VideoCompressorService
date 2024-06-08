@@ -26,6 +26,22 @@ def extract_header(header):
     
     return filename, data_length, file_hash, json_length
 
+function_list = {
+    "mp3": editor.convert_to_mp3,
+    "compress": editor.compressSize,
+    "resolution": editor.changeResolution,
+    "aspect": editor.changeAspectRatio,
+    "GIF": editor.convert_to_GIF,
+    "speed": editor.change_speed
+}
+
+def handle_request(function_name, params):
+    if function_name in function_list:
+        func = function_list[function_name]
+        return func(*params)  # Unpack parameters for other functions
+    else:
+        raise ValueError(f"Function {function_name} not found")
+
 def upload():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_address = '0.0.0.0'
@@ -45,12 +61,12 @@ def upload():
         try:
             print('connection from', client_address)
             header = connection.recv(164)
-            filename, data_length, clientHash, json = extract_header(header)
+            filename, data_length, clientHash, json_data = extract_header(header)
 
             print("Extracted Filename:", filename)
             print("Extracted Data Length:", data_length)
             print("Extracted Hash:", clientHash)
-            print("Extracted JSON:", json)
+            print("Extracted JSON:", json_data)
 
             filepath = os.path.join(dpath, filename)
             with open(filepath, 'wb+') as f:
@@ -68,19 +84,13 @@ def upload():
                 print('Error: Please upload the file again.')
                 continue
 
-            """
-            # Receive the JSON message after file data\
-            json_data = connection.recv(json_length)
-            json_message = json_data.decode('utf-8')
-            message = json.loads(json_message)
-            return print("Extracted JSON Message:", message)
-
-            edit_method = message['method']
-            edit_method = globals()[edit_method]
-            edit_params = message['params']
-
-            edit_method(*edit_params)
-            """
+            # clean up & handle JSON data
+            data = json.loads(json_data)
+            edit_method = data['method']
+            edit_params = data['params']
+            print(edit_method)
+            print(edit_params)
+            handle_request(edit_method,edit_params)
 
         except Exception as e:
             print('Error: ' + str(e))

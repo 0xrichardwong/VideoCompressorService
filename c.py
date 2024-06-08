@@ -29,6 +29,15 @@ def hashFunc(filepath):
         file_data = f.read()
     return hashlib.sha256(file_data).hexdigest()
 
+param_list = {
+    "mp3": "Select file(e.g. cat.mp4): ",
+    "compress": "Select file(e.g. cat.mp4): ",
+    "resolution": "Select file(e.g. cat.mp4), width(e.g. 1280), height(e.g. 720): ",
+    "aspect": "Select file(e.g. cat.mp4) and aspect ratio(e.g. 16:9): ",
+    "GIF": "Select file(e.g. cat.mp4), starting time(e.g. 00:00:10) and duration (e.g. 5): ",
+    "speed": "Select file(e.g. cat.mp4), speed(e.g. 2.0): "
+}
+
 def upload():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -69,16 +78,12 @@ def upload():
         print('Client Hash:',clientHash)
 
         # 4. JSON
-        """
-        edit_method = input('Type in an edit method: ')
-        edit_params = input('Type in parameter(s): ').split(',')
-        """
+        edit_method = input('Choose from mp3/compress/resolution/aspect/GIF/speed: ')
+        edit_params = input(param_list[edit_method]).split(',')
 
         message = {
-            # "method": edit_method,
-            # "params": edit_params
-            "method": "convert_to_mp3",
-            "params": "cat.mp4"
+            "method": edit_method,
+            "params": edit_params
         }
         json_message = json.dumps(message)
 
